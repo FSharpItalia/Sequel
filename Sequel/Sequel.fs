@@ -126,3 +126,31 @@ type Sequel =
                         Success value
                     with
                         | ex -> Failure ex.Message
+
+module Client =
+
+///*******
+//A sequence is a logical series of elements all of one type. 
+//Sequences are particularly useful when you have a large, ordered collection of data but do not necessarily expect to use all the elements. 
+//Individual sequence elements are computed only as required, so a sequence can provide better performance than a list in situations in which not all the elements are used.
+///*******
+
+//query some records, input tuple, no Result output but a simple sequence
+    let uQuery  (provider:SQLProvider)
+                (connectionString: string) 
+                (commandType:CommandType) 
+                (parameters:seq<string*'paramValue>) 
+                (bind:IDataReader->'Result) 
+                (sql: string)  = 
+                seq { 
+                    use cn = DbFactory.createCn provider connectionString 
+                    use cmd = DbFactory.createCmd provider cn sql  
+                    cmd.CommandType<-commandType 
+                    parameters 
+                            |> Seq.iter (fun p-> cmd.Parameters.Add(DbFactory.createPmt provider p) |> ignore)
+
+                    cn.Open()
+                    use reader = cmd.ExecuteReader()
+                    while reader.Read() do
+                        yield reader |> bind
+                }
