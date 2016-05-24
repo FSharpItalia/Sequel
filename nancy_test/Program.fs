@@ -31,4 +31,5 @@ let main args =
     Console.WriteLine("Server started at:" + System.DateTime.Now.ToString() + " on url: " + uri.ToString())
     while true do Console.ReadLine() |> ignore
     nancy.Stop()
+    Console.WriteLine("Server stopped at:" + System.DateTime.Now.ToString())
     0

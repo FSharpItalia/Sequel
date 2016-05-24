@@ -36,7 +36,7 @@ Kernel.LoadLibrary(Path.Combine(@"..\SQLAccess\bin\Debug\", "SQLData.dll"))
 //The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_ as long as those names are not also used by explicitly declared columns.
 // If the table has a column of type INTEGER PRIMARY KEY then that column is another alias for the rowid.
 [<Literal>]
-let DBPATH = __SOURCE_DIRECTORY__ + @"\data\northwind.db"
+let DB_PATH = __SOURCE_DIRECTORY__ + @"\data\northwind.db"
 
 //let [<Literal>] DBPATH = __SOURCE_DIRECTORY__ + @"\data\northwind3.db" 
 // connection string
@@ -52,7 +52,7 @@ let DBPATH = __SOURCE_DIRECTORY__ + @"\data\northwind.db"
 //    //SQLite9
 //    //With password
 //    //Data Source=c:\mydb.db;Version=3;Password=myPassword;
-let CN_STRING = sprintf @"Data Source=%s;Version=3;" DBPATH
+let CN_STRING = sprintf @"Data Source=%s;Version=3;" DB_PATH
 // let's currying
 let executeSQL (bind : IDataReader -> 'Result) (sql : string) = Sequel.uQuery SQLite CN_STRING CommandType.Text Seq.empty
 let executeSQLParam (prm : seq<string * 'paramValue>) (bind : IDataReader -> 'Result) (sql : string) = 
@@ -60,21 +60,21 @@ let executeSQLParam (prm : seq<string * 'paramValue>) (bind : IDataReader -> 'Re
 
 [<Literal>]
 let SELECT_SUPPLIERS = @"Select * from [Suppliers]"
-let SELECT_TOP_SUPPLIERS = @"Select * from [Suppliers]"
+let SELECT_TOP_SUPPLIERS = @"Select * from [Suppliers] limit 5"
 let SELECT_WHERE_SUPPLIERS = @"Select * from [Suppliers] WHERE SupplierID>10"
 
 
-let a = Client.uQuery SQLite
-let b = a CN_STRING 
-let c = b CommandType.Text 
-let d = c Seq.empty
-let executeSQL = d bindSuppliers
+//let a = Client.uQuery SQLite
+//let b = a CN_STRING 
+//let c = b CommandType.Text 
+//let d = c Seq.empty
+//let executeSQL = d bindSuppliers
 
 
 //unsafe query without parameters
-let suppliers = executeSQL SELECT_SUPPLIERS  
-let suppliers2 = executeSQL SELECT_TOP_SUPPLIERS 
-let suppliers3 = executeSQL SELECT_WHERE_SUPPLIERS 
+let suppliers = Sequel.uQuery SQLite CN_STRING CommandType.Text Seq.empty bindSuppliers SELECT_SUPPLIERS
+let suppliers2 =  Sequel.uQuery SQLite CN_STRING CommandType.Text Seq.empty bindSuppliers  SELECT_TOP_SUPPLIERS 
+let suppliers3 =  Sequel.uQuery SQLite CN_STRING CommandType.Text Seq.empty bindSuppliers SELECT_WHERE_SUPPLIERS 
 
 try 
     //---------

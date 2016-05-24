@@ -9,7 +9,16 @@
 
 namespace mahamudra.system.web
 
-open Nancy
+//Nancy web api
+open Nancy 
+//Railway pattern
+open Mahamudra.System.Railway
+// sequel library
+open Mahamudra.System.Data.Sql
+//
+open System.Data
+//
+open Mahamudra.System.Models.Binding
 
 // :> obj Up-casting operator. Get function has to return an object
 type App() as this =
@@ -33,3 +42,23 @@ type App() as this =
               return "bar" :> obj
           }
           |> Async.StartAsTask
+
+
+// :> obj Up-casting operator. Get function has to return an object
+type SequelTest() as this =
+    inherit NancyModule()
+    do
+        let DB_PATH = __SOURCE_DIRECTORY__ + @"\data\northwind.db"
+        let CN_STRING = sprintf @"Data Source=%s;Version=3;" DB_PATH
+        let SELECT_SUPPLIERS = @"Select * from [Suppliers]"
+        let SELECT_SUPPLIERS_BY_ID = @"Select * from [Suppliers] WHERE SupplierID=@id"
+        let provider = SQLite
+        this.Get.["/Suppliers"] <- fun _ -> 
+             let response = this.Response.AsJson(Sequel.query provider CN_STRING CommandType.Text Seq.empty bindSuppliers SELECT_SUPPLIERS)
+             response.ContentType <- "application/json"
+             response :> obj
+        this.Get.["/Suppliers/{id}"] <- fun parameters -> 
+             let id = (parameters :?> Nancy.DynamicDictionary).["id"]
+             let response = this.Response.AsJson(Sequel.query provider CN_STRING CommandType.Text [("@id", id)] bindSuppliers SELECT_SUPPLIERS_BY_ID)
+             response.ContentType <- "application/json"
+             response :> obj
